@@ -4,6 +4,7 @@ import com.google.cloud.functions.HttpFunction;
 import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -22,8 +23,8 @@ public class RandomQuotes implements HttpFunction {
     @Override
     public void service(final HttpRequest request, final HttpResponse response) throws IOException {
         try {
-            final List<String> authors = getResource("authors.txt");
-            final List<String> quotes = getResource("quotes.txt");
+            final List<String> authors = load("authors.txt");
+            final List<String> quotes = load("quotes.txt");
             final int randomIndex = new Random().nextInt(authors.size());
 
             final String json = "{\"quote\": \"" + quotes.get(randomIndex)+ "\", " +
@@ -39,12 +40,15 @@ public class RandomQuotes implements HttpFunction {
         }
     }
 
-    private List<String> getResource(final String resourceName) throws URISyntaxException, IOException {
-        final URL resource = getClass().getClassLoader().getResource(resourceName);
-        if (resource == null) {
-            throw new IllegalArgumentException("file not found!");
-        } else {
-            return Files.readAllLines(Paths.get(resource.toURI()));
+    public static List<String> load(final String path) {
+        ClassLoader classLoader = RandomQuotes.class.getClassLoader();
+        File file = new File(classLoader.getResource(path).getFile());
+        List<String> lines = null;
+        try {
+            return Files.readAllLines(file.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return List.of();
         }
     }
 
