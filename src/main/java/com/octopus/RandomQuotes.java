@@ -4,9 +4,7 @@ import com.google.cloud.functions.HttpFunction;
 import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -15,6 +13,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RandomQuotes implements HttpFunction {
 
@@ -40,12 +40,14 @@ public class RandomQuotes implements HttpFunction {
         }
     }
 
-    public static List<String> load(final String path) {
-        final ClassLoader classLoader = RandomQuotes.class.getClassLoader();
-        final File file = new File(classLoader.getResource(path).getFile());
+   private List<String> load(final String path) {
         try {
-            return Files.readAllLines(file.toPath());
-        } catch (IOException e) {
+            final InputStream inputStream = this.getClass().getResourceAsStream(path);
+            final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            final Stream<String> lines = bufferedReader.lines();
+            return lines.collect(Collectors.toList());
+        } catch (Exception e) {
             e.printStackTrace();
             return List.of("");
         }
