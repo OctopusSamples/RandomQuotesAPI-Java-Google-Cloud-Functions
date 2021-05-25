@@ -23,8 +23,8 @@ public class RandomQuotes implements HttpFunction {
     @Override
     public void service(final HttpRequest request, final HttpResponse response) throws IOException {
         try {
-            final List<String> authors = load("authors.txt");
-            final List<String> quotes = load("quotes.txt");
+            final List<String> authors = load("/authors.txt");
+            final List<String> quotes = load("/quotes.txt");
             final int randomIndex = new Random().nextInt(authors.size());
 
             final String json = "{\"quote\": \"" + quotes.get(randomIndex)+ "\", " +
@@ -36,19 +36,18 @@ public class RandomQuotes implements HttpFunction {
 
             response.getWriter().write(json);
         } catch (Exception ex) {
-            response.getWriter().write("Exception: " + ex.toString());
+            response.getWriter().write("Exception: " + ex);
         }
     }
 
     public static List<String> load(final String path) {
-        ClassLoader classLoader = RandomQuotes.class.getClassLoader();
-        File file = new File(classLoader.getResource(path).getFile());
-        List<String> lines = null;
+        final ClassLoader classLoader = RandomQuotes.class.getClassLoader();
+        final File file = new File(classLoader.getResource(path).getFile());
         try {
             return Files.readAllLines(file.toPath());
         } catch (IOException e) {
             e.printStackTrace();
-            return List.of();
+            return List.of("");
         }
     }
 
@@ -63,6 +62,5 @@ public class RandomQuotes implements HttpFunction {
         } catch (final Exception e) {
             return "unknown";
         }
-
     }
 }
