@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -21,6 +22,9 @@ public class RandomQuotes implements HttpFunction {
 
     @Override
     public void service(final HttpRequest request, final HttpResponse response) throws IOException {
+        if (handleCORS(request, response))
+            return;
+
         try {
             final List<String> authors = load("/authors.txt");
             final List<String> quotes = load("/quotes.txt");
@@ -37,6 +41,22 @@ public class RandomQuotes implements HttpFunction {
         } catch (Exception ex) {
             response.getWriter().write("Exception: " + ex);
         }
+    }
+
+    /**
+     * Handle CORS headers
+     * @return true if we return immediately, false otherwise
+     */
+    private boolean handleCORS(final HttpRequest request, final HttpResponse response) {
+        response.appendHeader("Access-Control-Allow-Origin", "*");
+        if ("OPTIONS".equals(request.getMethod())) {
+            response.appendHeader("Access-Control-Allow-Methods", "GET");
+            response.appendHeader("Access-Control-Allow-Headers", "Content-Type");
+            response.appendHeader("Access-Control-Max-Age", "3600");
+            response.setStatusCode(HttpURLConnection.HTTP_NO_CONTENT);
+            return true;
+        }
+        return false;
     }
 
     private List<String> load(final String path) {
