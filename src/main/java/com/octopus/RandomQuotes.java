@@ -41,17 +41,18 @@ public class RandomQuotes implements HttpFunction {
     }
 
    private List<String> load(final String path) {
-        try {
+        try (
             final InputStream inputStream = this.getClass().getResourceAsStream(path);
             final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             final Stream<String> lines = bufferedReader.lines();
+        ) {
             return lines.collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
             return List.of("");
         }
-    }
+   }
 
     private String getVersion() {
         try
